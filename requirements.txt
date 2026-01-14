@@ -1,0 +1,10 @@
+streamlit
+pandas
+spacy
+sentence-transformers
+PyMuPDF
+python-docx
+pdf2image
+pytesseract
+beautifulsoup4
+requests
