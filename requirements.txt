@@ -1,6 +1,6 @@
 streamlit
 pandas
-spacy
+spacy<3.8.0
 sentence-transformers
 PyMuPDF
 python-docx
