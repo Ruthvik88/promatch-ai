@@ -3,7 +3,6 @@ import pandas as pd
 from utils import extract_text_from_upload, fetch_job_description_from_url, create_highlighted_pdf
 from analyzer import analyze_resume
 
-# --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="ProMatch AI",
     page_icon="🚀",
@@ -11,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS ---
 st.markdown("""
 <style>
     /* Global Styles */
@@ -69,7 +67,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=50)
     st.subheader("Configuration")
@@ -77,7 +74,6 @@ with st.sidebar:
     st.markdown("---")
     st.info("💡 **Tip:** Use the 'Job URL' tab to quickly load job requirements directly from LinkedIn or Indeed.")
 
-# --- MAIN INPUT SECTION ---
 col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
@@ -86,14 +82,12 @@ with col1:
 
 with col2:
     st.markdown("### 2. Job Description")
-    # Tab selection for Text vs URL
     jd_input_type = st.radio("Input Source", ["Paste Text", "Job URL"], horizontal=True, label_visibility="collapsed")
     
     if jd_input_type == "Paste Text":
         job_desc = st.text_area("Paste JD here...", height=200, placeholder="Copy and paste the full job description here...")
     else:
         job_url = st.text_input("Enter Job URL (LinkedIn/Indeed/etc.)")
-        # UNIQUE KEY ADDED BELOW: key="btn_fetch_jd_unique"
         if st.button("Fetch JD", use_container_width=True, key="btn_fetch_jd_unique"):
             with st.spinner("Fetching job details..."):
                 job_desc = fetch_job_description_from_url(job_url)
@@ -105,10 +99,8 @@ with col2:
         else:
             job_desc = ""
 
-# --- ANALYSIS TRIGGER ---
-st.markdown("<br>", unsafe_allow_html=True) # Spacer
+st.markdown("<br>", unsafe_allow_html=True) 
 
-# UNIQUE KEY ADDED BELOW: key="btn_analyze_resume_unique"
 if st.button("Analyze Resume", type="primary", use_container_width=True, key="btn_analyze_resume_unique"):
     
     if jd_input_type == "Job URL" and 'job_desc' not in locals():
@@ -117,10 +109,8 @@ if st.button("Analyze Resume", type="primary", use_container_width=True, key="bt
     elif uploaded_file and job_desc:
         with st.spinner("🔍 Analyzing semantic matches..."):
             
-            # 1. EXTRACT TEXT
             resume_text = extract_text_from_upload(uploaded_file)
             
-            # Validation Check
             if resume_text.startswith("Error"):
                 st.error(f"❌ Failed to process file. It might be corrupted or password protected.\n\nDetails: {resume_text}")
                 st.stop()
@@ -128,19 +118,16 @@ if st.button("Analyze Resume", type="primary", use_container_width=True, key="bt
             if len(resume_text.strip()) < 50:
                 st.warning("⚠️ The uploaded file contains very little text. If this is a scanned PDF, ensure it is clear enough for OCR.")
 
-            # 2. ANALYZE
             score, present, missing = analyze_resume(resume_text, job_desc, threshold)
             
             st.markdown("---")
             
-            # --- SCORE CARDS ---
             c1, c2, c3 = st.columns(3)
             c1.metric("Match Score", f"{score}%")
             c2.metric("Skills Found", len(present))
             c3.metric("Missing Skills", len(missing), delta_color="inverse")
             st.progress(int(score))
             
-            # --- TABS FOR RESULTS ---
             tab1, tab2, tab3, tab4 = st.tabs(["✅ Matched", "⚠️ Missing", "🔥 Heatmap", "📋 Data"])
             
             with tab1:
@@ -159,7 +146,6 @@ if st.button("Analyze Resume", type="primary", use_container_width=True, key="bt
                     st.success("All skills matched! You are a strong candidate.")
 
             with tab3:
-                # Heatmap Overlay
                 if uploaded_file.name.endswith(".pdf"):
                     st.write("Keywords highlighted in **Green** denote found skills.")
                     highlighted_images = create_highlighted_pdf(uploaded_file, present)
@@ -176,7 +162,6 @@ if st.button("Analyze Resume", type="primary", use_container_width=True, key="bt
     else:
         st.warning("Please provide both a resume and a job description.")
 
-# --- FOOTER ---
 st.markdown("""
 <div class="footer">
     <p>Developed by Ruthvik | &copy; 2026 ProMatch AI</p>
