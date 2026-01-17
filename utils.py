@@ -1,4 +1,4 @@
-import fitz  # PyMuPDF
+import fitz 
 import docx
 import io
 import requests
@@ -16,14 +16,12 @@ def extract_text_from_upload(uploaded_file):
     try:
         if file_ext == 'pdf':
             file_bytes = uploaded_file.read()
-            # Reset pointer after read so other functions can use it
             uploaded_file.seek(0)
             
             with fitz.open(stream=file_bytes, filetype="pdf") as doc:
                 for page in doc:
                     text += page.get_text()
             
-            # OCR Fallback
             if len(text.strip()) < 50:
                 uploaded_file.seek(0)
                 try:
@@ -54,12 +52,10 @@ def fetch_job_description_from_url(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Remove script and style elements
         for script in soup(["script", "style"]):
             script.decompose()
             
         text = soup.get_text(separator=' ')
-        # Clean up whitespace
         lines = (line.strip() for line in text.splitlines())
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = '\n'.join(chunk for chunk in chunks if chunk)
@@ -75,28 +71,23 @@ def create_highlighted_pdf(uploaded_file, keywords):
     if file_ext != 'pdf':
         return []
 
-    # Read bytes
     uploaded_file.seek(0)
     file_bytes = uploaded_file.read()
-    uploaded_file.seek(0) # Reset again
+    uploaded_file.seek(0) 
 
     doc = fitz.open(stream=file_bytes, filetype="pdf")
     highlighted_pages = []
 
     for page_num, page in enumerate(doc):
-        # Search for each keyword
         for word in keywords:
-            # search_for is case-insensitive by default
             quads = page.search_for(word)
             
-            # Add highlight annotation for each occurrence
             for quad in quads:
                 highlight = page.add_highlight_annot(quad)
-                highlight.set_colors(stroke=(0, 1, 0)) # Green color
+                highlight.set_colors(stroke=(0, 1, 0)) 
                 highlight.update()
 
-        # Render page to image (Pixmap) for display in Streamlit
-        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2)) # Zoom x2 for quality
+        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
         img_bytes = pix.tobytes("png")
         highlighted_pages.append(img_bytes)
         
